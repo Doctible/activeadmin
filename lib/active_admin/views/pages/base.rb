@@ -33,7 +33,7 @@ module ActiveAdmin
               text_node(tag(:meta, name: name, content: content))
             end
 
-            text_node(javascript_include_tag('active_admin.js'))
+            text_node(javascript_pack_tag('active_admin.js'))
 
             if active_admin_namespace.favicon
               text_node(favicon_link_tag(active_admin_namespace.favicon))
