@@ -1,4 +1,4 @@
-apply File.expand_path("../rails_template.rb", __FILE__)
+apply File.expand_path('rails_template.rb', __dir__)
 
 inject_into_file 'config/initializers/active_admin.rb', <<-RUBY, after: "ActiveAdmin.setup do |config|\n"
 
@@ -143,19 +143,19 @@ inject_into_file 'app/admin/posts.rb', <<-'RUBY', after: "ActiveAdmin.register P
 
   scope :all, default: true
 
-  scope :drafts do |posts|
+  scope :drafts, group: :status do |posts|
     posts.where(["published_date IS NULL"])
   end
 
-  scope :scheduled do |posts|
+  scope :scheduled, group: :status do |posts|
     posts.where(["posts.published_date IS NOT NULL AND posts.published_date > ?", Time.now.utc])
   end
 
-  scope :published do |posts|
+  scope :published, group: :status do |posts|
     posts.where(["posts.published_date IS NOT NULL AND posts.published_date < ?", Time.now.utc])
   end
 
-  scope :my_posts do |posts|
+  scope :my_posts, group: :author do |posts|
     posts.where(author_id: current_admin_user.id)
   end
 
@@ -293,7 +293,8 @@ append_file "db/seeds.rb", "\n\n" + <<-RUBY.strip_heredoc
     User.create!  first_name: first,
                   last_name: last,
                   username: [first,last].join('-').downcase,
-                  age: rand(80)
+                  age: rand(80),
+                  encrypted_password: SecureRandom.hex
   end
 
   categories = ["Rock", "Pop Rock", "Alt-Country", "Blues", "Dub-Step"].collect do |name|

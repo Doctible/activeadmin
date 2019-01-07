@@ -1,62 +1,34 @@
 ---
 
-engines:
-  duplication:
-    enabled: true
+version: "2"
 
-    config:
-      languages:
-        javascript:
+checks:
+  argument-count:
+    enabled: false
 
-        ruby:
-          mass_threshold: 100
+  complex-logic:
+    enabled: false
 
-  fixme:
-    enabled: true
+  file-lines:
+    enabled: false
 
-    config:
-      strings:
-        - FIXME
-        - BUG
+  method-complexity:
+    enabled: false
 
-  grep:
-    enabled: true
+  method-count:
+    enabled: false
 
-    config:
-      patterns:
-        no-trailing-whitespace:
-          pattern: \s*$
-          annotation: "Don't leave trailing whitespace"
-          severity: minor
-          categories: Style
-          path_patterns:
-            - "**.arb"
-            - "**.coffee"
-            - "**.css"
-            - "**.erb"
-            - "**.es6"
-            - "**.feature"
-            - "**.gemfile"
-            - "**.gemspec"
-            - "**.html"
-            - "**.js"
-            - "**.md"
-            - "**.rake"
-            - "**.rb"
-            - "**.scss"
-            - "**.yml"
-            - ".*.yml"
+  method-lines:
+    enabled: false
 
-  markdownlint:
-    enabled: true
+  nested-control-flow:
+    enabled: false
 
-  rubocop:
-    enabled: true
-    channel: rubocop-0-49
+  return-statements:
+    enabled: false
 
-exclude_paths:
-  - "gemfiles/vendor/**/*"
-  - ".test-rails-apps/**/*"
-  - "spec/rails/**/*"
-  - "coverage/**/*"
-  - "vendor/**/*"
+  similar-code:
+    enabled: false
+
+  identical-code:
+    enabled: false

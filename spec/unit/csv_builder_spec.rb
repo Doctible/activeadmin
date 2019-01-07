@@ -1,7 +1,6 @@
 require 'rails_helper'
 
 RSpec.describe ActiveAdmin::CSVBuilder do
-
   describe '.default_for_resource using Post' do
     let(:application){ ActiveAdmin::Application.new }
     let(:namespace){ ActiveAdmin::Namespace.new(application, :admin) }
@@ -35,6 +34,14 @@ RSpec.describe ActiveAdmin::CSVBuilder do
       it 'gets name from I18n' do
         title_index =  resource.content_columns.index(:title) + 1 # First col is always id
         expect(csv_builder.columns[title_index].name).to eq localized_name
+      end
+    end
+
+    context 'for models having sensitive attributes' do
+      let(:resource){ ActiveAdmin::Resource.new(namespace, User, {}) }
+
+      it 'omits sensitive fields' do
+        expect(csv_builder.columns.map(&:data)).to_not include :encrypted_password
       end
     end
   end
@@ -234,6 +241,15 @@ RSpec.describe ActiveAdmin::CSVBuilder do
       builder.build dummy_controller, []
     end
 
+    it "should disable the ActiveRecord query cache" do
+      expect(builder).to receive(:build_row).twice do
+        expect(ActiveRecord::Base.connection.query_cache_enabled).to be_falsy
+        []
+      end
+      ActiveRecord::Base.cache do
+        builder.build dummy_controller, []
+      end
+    end
   end
 
   context "build csv using specified encoding and encoding_options" do
@@ -245,10 +261,6 @@ RSpec.describe ActiveAdmin::CSVBuilder do
 
         def collection
           Post
-        end
-
-        def apply_decorator(resource)
-          resource
         end
 
         def view_context
@@ -295,10 +307,9 @@ RSpec.describe ActiveAdmin::CSVBuilder do
 
   skip '#exec_columns'
 
-  skip '#build_row' do
-    it 'renders non-strings'
-    it 'encodes values correctly'
-    it 'passes custom encoding options to String#encode!'
+  describe '#build_row' do
+    xit 'renders non-strings'
+    xit 'encodes values correctly'
+    xit 'passes custom encoding options to String#encode!'
   end
-
 end

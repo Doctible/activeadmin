@@ -1,12 +1,7 @@
-# -*- coding: UTF-8 -*-
-
 require 'rails_helper'
 
 module ActiveAdmin
   RSpec.describe Resource, "Naming" do
-
-    before { load_defaults! }
-
     let(:application){ ActiveAdmin::Application.new }
     let(:namespace){ Namespace.new(application, :admin) }
 
@@ -100,7 +95,6 @@ module ActiveAdmin
             end
           end
         end
-
       end
     end
 

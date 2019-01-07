@@ -5,7 +5,7 @@ RSpec.describe ActiveAdmin::FormBuilder do
   # Setup an ActionView::Base object which can be used for
   # generating the form for.
   let(:helpers) do
-    view = action_view
+    view = mock_action_view
     def view.posts_path
       "/posts"
     end
@@ -22,14 +22,6 @@ RSpec.describe ActiveAdmin::FormBuilder do
       end
     end
 
-    def view.a_helper_method
-      "A Helper Method"
-    end
-
-    def view.fa_icon(*args)
-      args.inspect
-    end
-
     def view.action_name
       'edit'
     end
@@ -37,13 +29,16 @@ RSpec.describe ActiveAdmin::FormBuilder do
     view
   end
 
-  def build_form(options = {}, form_object = Post.new, &block)
+  def form_html(options = {}, form_object = Post.new, &block)
     options = {url: helpers.posts_path}.merge(options)
 
     form = render_arbre_component({form_object: form_object, form_options: options, form_block: block}, helpers) do
       active_admin_form_for(assigns[:form_object], assigns[:form_options], &assigns[:form_block])
     end.to_s
+  end
 
+  def build_form(options = {}, form_object = Post.new, &block)
+    form = form_html(options, form_object, &block)
     Capybara.string(form)
   end
 
@@ -102,8 +97,8 @@ RSpec.describe ActiveAdmin::FormBuilder do
     end
 
     it "should generate a text input" do
-       expect(body).to have_selector("input[type=text][name='post[title]']")
-     end
+      expect(body).to have_selector("input[type=text][name='post[title]']")
+    end
     it "should generate a textarea" do
       expect(body).to have_selector("textarea[name='post[body]']")
     end
@@ -204,7 +199,6 @@ RSpec.describe ActiveAdmin::FormBuilder do
       expect(body).to have_selector("[type=submit]", count: 2)
       expect(body).to have_selector("[class=cancel]", count: 0)
     end
-
   end
 
   context "with Arbre inside" do
@@ -309,11 +303,9 @@ RSpec.describe ActiveAdmin::FormBuilder do
         expect(body).to have_selector("[type=radio]", count: 2)
       end
     end
-
   end
 
   context "with inputs component inside has_many" do
-
     def user
       u = User.new
       u.profile = Profile.new(bio: 'bio')
@@ -797,7 +789,6 @@ RSpec.describe ActiveAdmin::FormBuilder do
         it "shows the nested fields for unsaved records" do
           expect(body).to have_selector("fieldset.inputs.has_many_fields")
         end
-
       end
 
       context "with post returning nil for the sortable attribute" do
@@ -814,7 +805,6 @@ RSpec.describe ActiveAdmin::FormBuilder do
         it "shows the nested fields for unsaved records" do
           expect(body).to have_selector("fieldset.inputs.has_many_fields")
         end
-
       end
 
       context "with existing and new posts" do
@@ -896,20 +886,25 @@ RSpec.describe ActiveAdmin::FormBuilder do
       end
 
       context "in another has_many block" do
-        let :body do
-          build_form({url: '/categories'}, Category.new) do |f|
+        let :body_html do
+          form_html({url: '/categories'}, Category.new) do |f|
             f.object.posts.build
             f.has_many :posts do |p|
               p.object.taggings.build
+              p.input :title
+
               p.has_many :taggings do |t|
                 t.input :tag
+                t.input :position
               end
             end
           end
         end
+        let(:body) { Capybara.string body_html }
 
-        it "should wrap the inner has_many fieldset in an ol > li" do
-          expect(body).to have_selector(".has_many_container ol > li.has_many_container > fieldset")
+        it "displays the input between the outer and inner has_many" do
+          expect(body).to have_selector(".has_many_container ol > li:first-child input#category_posts_attributes_0_title")
+          expect(body).to have_selector(".has_many_container ol > li:nth-child(2).has_many_container > fieldset")
         end
 
         it "should not contain invalid li children" do
@@ -984,6 +979,20 @@ RSpec.describe ActiveAdmin::FormBuilder do
         selector = "input.datepicker[type=text][name='post[created_at]']"
         expect(body).to have_selector(selector)
         expect(body.find(selector)["data-datepicker-options"]).to eq({ minDate: '2013-10-18', maxDate: '2013-12-31' }.to_json)
+      end
+    end
+
+    describe "with label as proc" do
+      let :body do
+        build_form do |f|
+          f.inputs do
+            f.input :created_at, as: :datepicker, label: proc { 'Title from proc' }
+          end
+        end
+      end
+
+      it "should render proper label" do
+        expect(body).to have_selector("label", text: "Title from proc")
       end
     end
   end

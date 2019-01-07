@@ -2,10 +2,8 @@ require 'rails_helper'
 
 RSpec.describe ActiveAdmin::Views::PaginatedCollection do
   describe "creating with the dsl" do
-
-    before :all do
-      load_defaults!
-      reload_routes!
+    around do |example|
+      with_resources_during(example) { ActiveAdmin.register Post }
     end
 
     let(:view) do
@@ -243,7 +241,15 @@ RSpec.describe ActiveAdmin::Views::PaginatedCollection do
         expect(pagination_html.content).to match(/Per page:/)
         expect(pagination_node).to have_css("select option", count: 3)
       end
-    end
 
+      context "with pagination_total: false" do
+        let(:pagination) { paginated_collection(collection, per_page: [1, 2, 3], pagination_total: false) }
+
+        it "should render per_page select tag" do
+          info = pagination.find_by_class('pagination_information').first.content.gsub('&nbsp;', ' ')
+          expect(info).to eq "Displaying posts <b>1 - 5</b>"
+        end
+      end
+    end
   end
 end

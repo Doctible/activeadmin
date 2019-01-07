@@ -2,7 +2,6 @@ require 'rails_helper'
 
 RSpec.describe ActiveAdmin::Views::TableFor do
   describe "creating with the dsl" do
-
     let(:collection) do
       [
         Post.new(title: "First Post", starred: true),
@@ -376,6 +375,11 @@ RSpec.describe ActiveAdmin::Views::TableFor do
     context "when a block given with no sort key" do
       let(:table_column){ build_column("Username"){ } }
       it { is_expected.to be_sortable }
+
+      describe '#sort_key' do
+        subject { super().sort_key }
+        it { is_expected.to eq("Username") }
+      end
     end
 
     context "when a block given with a sort key" do
